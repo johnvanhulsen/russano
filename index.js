@@ -6,6 +6,7 @@ path = require('path');
 Plugin = function(options) {
     this.options = options || {};
     this.options.path = options.path || '';
+    this.options.type = options.type || 'json';
     this.options.filename = options.filename || 'timestamp.json';
 };
 
@@ -30,7 +31,8 @@ leadDecimal = function(num) {
 };
 
 Plugin.prototype.createDateObj = function(compiler, outputFull) {
-
+    var _this = this;
+    
     var date,
         yyyy, yy,
         M, MMM, MMMM,
@@ -38,8 +40,9 @@ Plugin.prototype.createDateObj = function(compiler, outputFull) {
         d, ddd, dddd,
         H, h, a, m, mm, s, ss, sss, ssss,
         timezone,
+        iso,
         dateObj,
-        json;
+        output;
 
     date = new Date();
 
@@ -85,37 +88,46 @@ Plugin.prototype.createDateObj = function(compiler, outputFull) {
     // timezone
     timezone = date.getTimezoneOffset();
     
-    dateObj = {
-        date: date,
-        yyyy: yyyy,
-        yy: yy,
-        M: M + 1,
-        MM: leadDecimal(M + 1),
-        MMM: MMM[M],
-        MMMM: MMMM[M],
-        w: w + 1,
-        ww: leadDecimal(w + 1),
-        www: www[w],
-        wwww: wwww[w],
-        d: d,
-        dd: leadDecimal(d),
-        H: H,
-        HH: leadDecimal(H),
-        h: h,
-        hh: leadDecimal(h),
-        a: a,
-        m: m,
-        mm: leadDecimal(m),
-        s: s,
-        ss: leadDecimal(s),
-        sss: sss,
-        ssss: leadDecimal(sss),
-        timezone: timezone
+    iso = date.toISOString();
+    
+    if (_this.type === 'json') { 
+        dateObj = {
+            date: date,
+            yyyy: yyyy,
+            yy: yy,
+            M: M + 1,
+            MM: leadDecimal(M + 1),
+            MMM: MMM[M],
+            MMMM: MMMM[M],
+            w: w + 1,
+            ww: leadDecimal(w + 1),
+            www: www[w],
+            wwww: wwww[w],
+            d: d,
+            dd: leadDecimal(d),
+            H: H,
+            HH: leadDecimal(H),
+            h: h,
+            hh: leadDecimal(h),
+            a: a,
+            m: m,
+            mm: leadDecimal(m),
+            s: s,
+            ss: leadDecimal(s),
+            sss: sss,
+            ssss: leadDecimal(sss),
+            timezone: timezone,
+            iso: iso
+        }
+
+        output = JSON.stringify(dateObj);
     }
-
-    json = JSON.stringify(dateObj);
-
-    fs.writeFile(outputFull, json, function(err) {
+    
+    if (_this.type === 'txt') {
+        output = iso;
+    }
+    
+    fs.writeFile(outputFull, output, function(err) {
         if (err) {
             compiler.errors.push(new Error('Timestamp Webpack Plugin: Unable to save to ' + outputFull));
         }
