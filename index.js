@@ -17,7 +17,7 @@ Plugin.prototype.apply = function(compiler) {
     output = path.join(_this.options.path, _this.options.filename);
 
     compiler.plugin('emit', function(compiler, callback) {
-        _this.createDateObj(compiler, output);
+        _this.createDateObj(compiler, _this.options.type, output);
         callback();
     });
 };
@@ -30,9 +30,7 @@ leadDecimal = function(num) {
     return newNum;
 };
 
-Plugin.prototype.createDateObj = function(compiler, outputFull) {
-    var _this = this;
-    
+Plugin.prototype.createDateObj = function(compiler, type, outputFull) {
     var date,
         yyyy, yy,
         M, MMM, MMMM,
@@ -87,12 +85,13 @@ Plugin.prototype.createDateObj = function(compiler, outputFull) {
 
     // timezone
     timezone = date.getTimezoneOffset();
-    
+
+    // ISO string
     iso = date.toISOString();
     
-    if (_this.type === 'json') { 
+    if (type === 'json') {
         dateObj = {
-            date: date,
+            date: iso,
             yyyy: yyyy,
             yy: yy,
             M: M + 1,
@@ -117,13 +116,12 @@ Plugin.prototype.createDateObj = function(compiler, outputFull) {
             sss: sss,
             ssss: leadDecimal(sss),
             timezone: timezone,
-            iso: iso
         }
 
         output = JSON.stringify(dateObj);
     }
-    
-    if (_this.type === 'txt') {
+
+    if (type === 'txt') {
         output = iso;
     }
     
